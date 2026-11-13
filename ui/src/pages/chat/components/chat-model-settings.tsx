@@ -3,7 +3,7 @@ import { Icon } from "../../../components/solid/icon.tsx";
 import { Popover, type PopoverHandle } from "../../../components/solid/popover.tsx";
 import { formatModelRuntimeLabel } from "../../../lib/model-runtime-label.ts";
 import { t } from "../../../lib/reactive/i18n.ts";
-import { modelProviderId, type ChatModelPickerOption } from "./chat-model-picker-options.ts";
+import type { ChatModelPickerOption } from "./chat-model-picker-options.ts";
 import type { ChatModelPickerParams } from "./chat-model-picker.tsx";
 
 export const modelRuntimeId = (option: ChatModelPickerOption) =>
@@ -52,13 +52,7 @@ export function ChatModelRuntimeControl(props: {
     <div class="chat-controls__runtime-row">
       <span class="chat-controls__settings-label">
         {t("chat.modelControls.runsOn")}
-        <Show
-          when={
-            props.options[0] &&
-            modelProviderId(props.options[0]) === "anthropic" &&
-            runtimes().every((runtime) => formatModelRuntimeLabel("anthropic", runtime, t)?.detail)
-          }
-        >
+        <Show when={runtimes().length > 1}>
           <Popover
             ref={(handle) => (info = handle)}
             id={infoId}
@@ -85,10 +79,16 @@ export function ChatModelRuntimeControl(props: {
                 {(runtime) => (
                   <div>
                     <div class="chat-controls__runtime-detail-label">
-                      {formatModelRuntimeLabel("anthropic", runtime, t)?.label}
+                      {formatModelRuntimeLabel(props.options[0]?.provider ?? "", runtime, t)?.label}
                     </div>
                     <div class="chat-controls__runtime-detail-copy">
-                      {formatModelRuntimeLabel("anthropic", runtime, t)?.detail}
+                      {formatModelRuntimeLabel(props.options[0]?.provider ?? "", runtime, t)
+                        ?.detail ??
+                        t("chat.modelControls.completionRoutes.harness.detail", {
+                          runtime:
+                            formatModelRuntimeLabel(props.options[0]?.provider ?? "", runtime, t)
+                              ?.label ?? "",
+                        })}
                     </div>
                   </div>
                 )}

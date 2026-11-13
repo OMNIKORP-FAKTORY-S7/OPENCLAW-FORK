@@ -680,3 +680,33 @@ it("opens the selected row's context menu without selecting its model", async ()
     .toHaveAttribute("aria-expanded", "false");
   expect(picker.open).toBe(true);
 });
+
+it("explains every OpenAI runtime in segment order with the generic detail", async () => {
+  const { params, update, open } = mountPicker();
+  params.modelOptions = [
+    modelOption("openai", "gpt-5-mini", { agentRuntimeId: "openclaw" }),
+    modelOption("openai", "gpt-5-mini", { agentRuntimeId: "codex" }),
+  ];
+  params.selectedModelValue = "openai/gpt-5-mini";
+  update();
+  await open();
+  await page.getByRole("button", { name: "Runs on", exact: true }).click();
+  const card = container.querySelector<HTMLElement>(".chat-controls__runtime-details")!;
+  expect(card.matches(":popover-open")).toBe(true);
+  expect(
+    [...container.querySelectorAll(".chat-controls__runtime-option")].map((el) => el.textContent),
+  ).toEqual(["OpenClaw", "Codex"]);
+  expect(
+    [
+      ...card.querySelectorAll(
+        ".chat-controls__runtime-details-content > div:not(.chat-controls__runtime-details-header)",
+      ),
+    ].map((el) => [
+      el.querySelector(".chat-controls__runtime-detail-label")?.textContent,
+      el.querySelector(".chat-controls__runtime-detail-copy")?.textContent,
+    ]),
+  ).toEqual([
+    ["OpenClaw", "Runs through the OpenClaw agent runtime and the account it uses."],
+    ["Codex", "Runs through the Codex agent runtime and the account it uses."],
+  ]);
+});
