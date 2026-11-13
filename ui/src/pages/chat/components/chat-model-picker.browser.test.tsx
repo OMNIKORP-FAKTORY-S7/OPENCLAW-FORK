@@ -697,7 +697,11 @@ it("explains every OpenAI runtime in segment order with the generic detail", asy
     [...container.querySelectorAll(".chat-controls__runtime-option")].map((el) => el.textContent),
   ).toEqual(["OpenClaw", "Codex"]);
   expect(
-    [...card.querySelectorAll(".chat-controls__runtime-details-content > div")].map((el) => [
+    [
+      ...card.querySelectorAll(
+        ".chat-controls__runtime-details-content > div:not(.chat-controls__runtime-details-header)",
+      ),
+    ].map((el) => [
       el.querySelector(".chat-controls__runtime-detail-label")?.textContent,
       el.querySelector(".chat-controls__runtime-detail-copy")?.textContent,
     ]),
