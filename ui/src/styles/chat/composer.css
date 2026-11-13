@@ -4552,6 +4552,12 @@ html[dir="rtl"] .chat-attachments-preview .chat-attachment-loading__line > span 
     0 0 0 0.5px var(--border);
 }
 
+/* The segmented surface matches the dark menu, below the bar's tinted surface. */
+:root[data-theme-mode="dark"] .chat-controls__runtime-option--active {
+  background: var(--menu-selected);
+  box-shadow: none;
+}
+
 .chat-controls__runtime-option:not(.chat-controls__runtime-option--active):not(
     [aria-disabled="true"]
   ):hover {
