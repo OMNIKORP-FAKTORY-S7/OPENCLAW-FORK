@@ -30,6 +30,7 @@ import {
   declarePromptToolPin,
 } from "../prompt-cache-observability.js";
 import { getProviderPromptState } from "../provider-prompt-state.js";
+import { requestSessionPrefixRebuild } from "../session-prefix-owner.js";
 import {
   retainEmbeddedSessionPromptState,
   beginSessionSystemPrompt,
@@ -37,6 +38,7 @@ import {
   prepareSessionSystemPrompt,
   prepareSessionToolUsageRanking,
   prepareSessionToolSurface,
+  readToolSurfaceCheckpoint,
   prepareSessionPublicationToolListing,
   retireSessionSystemPrompt,
 } from "../session-prompt-state.js";
@@ -336,11 +338,17 @@ export async function prepareEmbeddedAttemptSessionRuntime(input: {
   const pinTools = usesSystemPromptSeries
     ? (tools: AnyAgentTool[]) => {
         const pending = sessionPromptState.pendingToolSurface;
+        const entries = sessionManager[sessionManagerReadTranscriptBranch]();
+        const pinnedPolicy = readToolSurfaceCheckpoint(entries)?.toolPolicy;
+        if (pinnedPolicy !== undefined && pinnedPolicy !== toolPolicyDigest) {
+          // A deliberate tool-policy change is a rebuild point: the next request sends the new set.
+          requestSessionPrefixRebuild(attempt.sessionId);
+        }
         const pinned = prepareSessionToolSurface({
           state: sessionPromptState,
           routeKey: promptRouteKey,
           toolPolicy: toolPolicyDigest,
-          entries: sessionManager[sessionManagerReadTranscriptBranch](),
+          entries,
           historyBoundaryCount: sessionManager.getBoundaryCount(),
           tools,
         });
